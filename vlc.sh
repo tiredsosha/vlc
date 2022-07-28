@@ -7,13 +7,9 @@ fi
 #samba
 mkdir /home/$1/vlc/
 mkdir /home/$1/vlc/music
-apt --fix-broken install
-sudo apt-get update
-sudo apt update
-sudo apt install samba
 sudo echo '[music]' >> /etc/samba/smb.conf
 sudo echo '    comment = Backgroung music' >> /etc/samba/smb.conf
-sudo echo '    path = /home/$1/vlc/music' >> /etc/samba/smb.conf
+sudo echo "    path = /home/$1/vlc/music" >> /etc/samba/smb.conf
 sudo echo '    read only = no' >> /etc/samba/smb.conf
 sudo echo '    guest ok = yes' >> /etc/samba/smb.conf
 sudo ufw allow samba
@@ -21,7 +17,11 @@ sudo service smbd restart
 
 # user access
 usermod -a -G sudo $1
-sudo echo '%LimitedAdmins ALL=NOPASSWD: /bin/systemctl vlc.service' >> /etc/sudoers ## проверить тут почему то не подставилось
+
+a=$1
+b='ALL=(ALL) NOPASSWD: ALL'
+c="${a} ${b}"
+sudo echo "${c}" >> /etc/sudoers ## проверить тут почему то не подставилось
 
 # vlc install
 apt --fix-broken install
@@ -40,8 +40,6 @@ sudo tee -a /lib/systemd/system/vlc.service <<EOF
 [Unit]
 Description=VLC Player
 After=multi-user.target
-StartLimitIntervalSec=500
-StartLimitBurst=5
 [Service]
 Restart=on-failure
 RestartSec=5s
@@ -56,66 +54,30 @@ sudo systemctl daemon-reload
 sudo systemctl enable vlc.service 
 sudo systemctl start vlc.service
 
-# vlc http server
-tee -a /home/$1/vlc/simplevlc.py <<EOF
-#!/usr/bin/env python3.6
-
-
-from http.server import BaseHTTPRequestHandler, HTTPServer
-
-
-class S(BaseHTTPRequestHandler):
-    def _set_response(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
-
-    def do_GET(self):
-        self._set_response()
-
-        from os import system
-
-        system('sudo systemctl restart vlc.service')
-
-
-def run(server_class=HTTPServer, handler_class=S, port=8080):
-    server_address = ('', 8000)
-    httpd = server_class(server_address, handler_class)
-    try:
-        httpd.serve_forever()
-    except KeyboardInterrupt:
-        pass
-    httpd.server_close()
-
-
-if __name__ == '__main__':
-    run()
-EOF
-
+wget "https://github.com/tiredsosha/vlc/releases/download/1.0.0/vlchttp" -O  /home/$1/vlc/vlchttp
+sudo chmod +x /home/$1/vlc/vlchttp
 # vlc http systemctl
 sudo tee -a /lib/systemd/system/vlchttp.service <<EOF
 [Unit]
-Description=Simple http for VLC turn on
+Description=Simple http for VLC turn off
 After=multi-user.target
-StartLimitIntervalSec=500
-StartLimitBurst=5
 [Service]
 Restart=on-failure
 RestartSec=5s
 Type=simple
 User=$1
-WorkingDirectory=/home/$1/vlc/
-ExecStart=/home/$1/vlc/simplevlc.py
+ExecStart=/home/$1/vlc/vlchttp
 [Install]
 WantedBy=multi-user.target
 EOF
 sudo systemctl daemon-reload 
 sudo systemctl enable vlchttp.service 
 sudo systemctl start vlchttp.service
+sudo systemctl status vlchttp.service
 
 # user access to vlc files
 sudo chown -R $1: /home/$1/vlc/
 sudo chmod -R 777 /home/$1/vlc/
 
 # reboot
-sudo reboot
+# sudo reboot
