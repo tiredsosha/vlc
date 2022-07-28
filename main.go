@@ -12,7 +12,7 @@ import (
 
 func getRoot(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("got / request\n")
-	out2, err2 := exec.Command("bash", "-c", "pkill -f /bin/vlc").Output()
+	out2, err2 := exec.Command("bash", "-c", "pkill -f /vlc/music").Output()
 	fmt.Println(out2)
 	fmt.Println(err2)
 	time.Sleep(3 * time.Second)
