@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"time"
 )
 
 func getRoot(w http.ResponseWriter, r *http.Request) {
@@ -14,6 +15,7 @@ func getRoot(w http.ResponseWriter, r *http.Request) {
 	out2, err2 := exec.Command("bash", "-c", "pkill -f vlc").Output()
 	fmt.Println(out2)
 	fmt.Println(err2)
+	time.Sleep(20 * time.Second)
 	out, err := exec.Command("bash", "-c", "sudo systemctl restart vlc.service").Output()
 	fmt.Println(out)
 	fmt.Println(err)
