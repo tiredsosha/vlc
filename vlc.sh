@@ -54,7 +54,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable vlc.service 
 sudo systemctl start vlc.service
 
-wget "https://github.com/tiredsosha/vlc/releases/download/1.0.0/vlchttp" -O  /home/$1/vlc/vlchttp
+wget "https://github.com/tiredsosha/vlc/releases/download/1.0.1/vlchttp" -O  /home/$1/vlc/vlchttp
 sudo chmod +x /home/$1/vlc/vlchttp
 # vlc http systemctl
 sudo tee -a /lib/systemd/system/vlchttp.service <<EOF
